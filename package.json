@@ -1,0 +1,62 @@
+{
+  "name": "yamibo",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "A terminal interface for bbs.yamibo.com",
+  "author": "KarasuShin<karasu.shing@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/KarasuShin/yamibo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KarasuShin/yamibo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KarasuShin/yamibo/issues"
+  },
+  "keywords": [
+    "yamibo",
+    "cli",
+    "terminal"
+  ],
+  "main": "./yamibo.js",
+  "bin": {
+    "yamibo": "./yamibo.js"
+  },
+  "files": [
+    "**"
+  ],
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "check": "eslint && tsc --noEmit",
+    "copy": "shx cp package.json dist && json -I -f dist/package.json -e \"this.devDependencies=undefined; this.scripts=undefined; this.publishConfig=undefined;\"",
+    "build": "tsup && npm run copy",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.12",
+    "cheerio": "^1.1.2",
+    "ink": "^6.5.1",
+    "ink-big-text": "^2.0.0",
+    "ink-scroll-view": "^0.3.2",
+    "ink-select-input": "^6.2.0",
+    "jotai": "^2.16.0",
+    "react": "^19.2.3",
+    "string-width": "^8.1.0",
+    "yargs-parser": "^22.0.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.7.3",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/yargs-parser": "^21.0.3",
+    "eslint": "^9.39.2",
+    "json": "^11.0.0",
+    "shx": "^0.4.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  }
+}
