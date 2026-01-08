@@ -1,7 +1,7 @@
 {
   "name": "yamibo",
   "type": "module",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A terminal interface for bbs.yamibo.com",
   "author": "KarasuShin<karasu.shing@gmail.com>",
   "license": "MIT",
