@@ -28,7 +28,7 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "check": "eslint && tsc --noEmit",
-    "copy": "shx cp package.json dist && json -I -f dist/package.json -e \"this.devDependencies=undefined; this.scripts=undefined; this.publishConfig=undefined;\"",
+    "copy": "shx cp package.json README.md dist && json -I -f dist/package.json -e \"this.devDependencies=undefined; this.scripts=undefined; this.publishConfig=undefined;\"",
     "build": "tsup && npm run copy",
     "prepublishOnly": "pnpm run build"
   },
