@@ -151,9 +151,20 @@ export async function getThreadList(fid: string, page = 1) {
     totalPages: Number($('[totalpage]').attr('totalpage')),
   }
 
+  const subForum = $(`#subforum_${fid} tr h2 a`).toArray().map((element) => {
+    const $element = $(element)
+    const title = $element.text()
+    const fid = $element.attr('href')?.match(/forum-(\d+)-/)?.[1]
+    return {
+      title,
+      fid: fid!,
+    }
+  }).filter(i => !!i.fid)
+
   return {
     threads,
     pagination,
+    subForum,
   }
 }
 

@@ -8,12 +8,13 @@ import { useStdoutDimensions } from '~/hooks/use-stdout-dimensions'
 import { currentPageAtom, store, threadDetailStateAtom, threadListStateAtom } from '~/store'
 import { getThreadList } from '~/utils/api'
 import { queryClient } from '~/utils/query'
+import { sw } from '~/utils/sw'
 
 export function ThreadList() {
   const threadListState = useAtomValue(threadListStateAtom)!
   const setThreadListState = useSetAtom(threadListStateAtom)
   const setThreadDetailState = useSetAtom(threadDetailStateAtom)
-  const [, height] = useStdoutDimensions()
+  const [width, height] = useStdoutDimensions()
 
   const query = useQuery({
     queryKey: ['thread-list', threadListState.fid, threadListState.pagination.current],
@@ -22,14 +23,73 @@ export function ThreadList() {
 
   useEffect(() => {
     if (query.data?.pagination.totalPages) {
-      setThreadListState({ ...threadListState, pagination: { ...threadListState.pagination, total: query.data.pagination.totalPages } })
+      setThreadListState({
+        ...threadListState,
+        pagination: {
+          ...threadListState.pagination,
+          total: query.data.pagination.totalPages,
+        },
+      })
     }
   }, [query.data?.pagination.totalPages])
+
+  useEffect(() => {
+    if (!threadListState.subForm && query.data?.subForum) {
+      setThreadListState(state => ({
+        ...state!,
+        subForm: query.data.subForum,
+      }))
+    }
+  }, [query.data?.subForum])
+
+  const subForums = useMemo(() => {
+    const forums = threadListState.subForm
+    if (forums?.length) {
+      return [{
+        title: '全部',
+        fid: threadListState.defaultFid,
+      }, ...forums]
+    }
+    return []
+  }, [threadListState.subForm])
 
   useInput((input, key) => {
     if (key.escape) {
       store.set(threadListStateAtom, null)
       store.set(currentPageAtom, 'home')
+    }
+    else if (key.tab) {
+      if (subForums.length > 0) {
+        setThreadListState(state => ({
+          ...state!,
+          focusMode: state!.focusMode === 'thread' ? 'subforum' : 'thread',
+        }))
+      }
+    }
+    else if (threadListState.focusMode === 'subforum') {
+      if (key.leftArrow || key.upArrow) {
+        setThreadListState(state => ({
+          ...state!,
+          subForumIndex: Math.max(0, state!.subForumIndex - 1),
+        }))
+      }
+      else if (key.rightArrow || key.downArrow) {
+        setThreadListState(state => ({
+          ...state!,
+          subForumIndex: Math.min(subForums.length - 1, state!.subForumIndex + 1),
+        }))
+      }
+      else if (key.return) {
+        const target = subForums[threadListState.subForumIndex]
+        if (target) {
+          setThreadListState({
+            ...threadListState,
+            fid: target.fid,
+            pagination: { ...threadListState.pagination, current: 1 },
+            focusMode: 'thread',
+          })
+        }
+      }
     }
     else if (input === 'r') {
       queryClient.removeQueries({
@@ -88,6 +148,61 @@ export function ThreadList() {
     return index > 0 ? index : 0
   }, [items, threadListState.tid])
 
+  const subForumBar = useMemo(() => {
+    if (!subForums.length)
+      return null
+
+    const selected = subForums[threadListState.subForumIndex]
+    if (!selected)
+      return null
+
+    let leftIndex = threadListState.subForumIndex - 1
+    let rightIndex = threadListState.subForumIndex + 1
+    const itemsToShow = [{ index: threadListState.subForumIndex, ...selected }]
+    let usedWidth = sw(`[${selected.title}] `)
+    const limit = width - 4
+
+    while (usedWidth < limit) {
+      let added = false
+      if (leftIndex >= 0) {
+        const item = subForums[leftIndex]
+        const w = sw(` ${item.title} `)
+        if (usedWidth + w < limit) {
+          itemsToShow.unshift({ index: leftIndex, ...item })
+          usedWidth += w
+          leftIndex--
+          added = true
+        }
+      }
+      if (rightIndex < subForums.length) {
+        const item = subForums[rightIndex]
+        const w = sw(` ${item.title} `)
+        if (usedWidth + w < limit) {
+          itemsToShow.push({ index: rightIndex, ...item })
+          usedWidth += w
+          rightIndex++
+          added = true
+        }
+      }
+      if (!added)
+        break
+    }
+
+    return (
+      <Box paddingBottom={1}>
+        {itemsToShow.map(item => (
+          <Text
+            key={item.fid}
+            color={item.index === threadListState.subForumIndex ? (threadListState.focusMode === 'subforum' ? 'green' : 'cyan') : 'gray'}
+            bold={item.index === threadListState.subForumIndex}
+          >
+            {item.index === threadListState.subForumIndex ? `[${item.title}]` : ` ${item.title} `}
+          </Text>
+        ))}
+      </Box>
+    )
+  }, [subForums, threadListState.subForumIndex, threadListState.focusMode])
+
   return (
     <Box width="100%" height="100%" flexDirection="column">
       <Text bold color="cyan">
@@ -95,7 +210,8 @@ export function ThreadList() {
         {' '}
         {threadListState.forumName}
       </Text>
-      <Box flexGrow={1} paddingTop={1}>
+      {subForumBar}
+      <Box flexGrow={1} paddingTop={subForumBar ? 0 : 1}>
         { query.isLoading || query.isError || !query.data?.threads.length
           ? (
               <Box height="100%" width="100%" justifyContent="center" alignItems="center">
@@ -118,7 +234,8 @@ export function ThreadList() {
               <SelectView
                 items={items}
                 onSelect={handleSelect}
-                limit={Math.max(5, height - 7)}
+                limit={Math.max(5, height - 7 - (subForumBar ? 2 : 0))}
+                isActive={threadListState.focusMode === 'thread'}
                 onChange={handleChange}
                 selectedIndex={selectedIndex}
               />

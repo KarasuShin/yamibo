@@ -6,7 +6,7 @@ import { useAtom, useSetAtom } from 'jotai'
 import { useMemo } from 'react'
 import { SelectView } from '~/components/select-view'
 import { useStdoutDimensions } from '~/hooks/use-stdout-dimensions'
-import { currentPageAtom, homeStateAtom, threadListPaginationAtom, threadListStateAtom } from '~/store'
+import { currentPageAtom, homeStateAtom, threadListStateAtom } from '~/store'
 import { getForumCategories } from '~/utils/api'
 
 interface ForumSelectItem extends SelectItem {
@@ -16,7 +16,6 @@ interface ForumSelectItem extends SelectItem {
 
 export function Home() {
   const setCurrentPage = useSetAtom(currentPageAtom)
-  const setThreadListPagination = useSetAtom(threadListPaginationAtom)
   const setThreadListState = useSetAtom(threadListStateAtom)
   const [homeState, setHomeState] = useAtom(homeStateAtom)
 
@@ -60,13 +59,16 @@ export function Home() {
       return
 
     if (item.fid && item.forumName) {
-      setThreadListPagination({ current: 1, total: 1 })
       setCurrentPage('thread-list')
       setThreadListState({
         fid: item.fid,
+        defaultFid: item.fid,
         forumName: item.forumName,
         pagination: { current: 1, total: 1 },
         tid: '',
+        focusMode: 'thread',
+        subForm: null,
+        subForumIndex: 0,
       })
     }
   }

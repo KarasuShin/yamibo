@@ -7,9 +7,10 @@ interface Props {
   total: number
   onPageChange: (page: number) => void
   debounceMs?: number
+  disabled?: boolean
 }
 
-export function Pagination({ current, total, onPageChange, debounceMs = 300 }: Props) {
+export function Pagination({ current, total, onPageChange, debounceMs = 200, disabled }: Props) {
   const displayPage = useSetState(current)
   const onPageChangeRef = useRef(onPageChange)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -43,6 +44,8 @@ export function Pagination({ current, total, onPageChange, debounceMs = 300 }: P
   }, [])
 
   useInput((input, key) => {
+    if (disabled)
+      return
     if (key.leftArrow) {
       if (displayPage.state === 1)
         return

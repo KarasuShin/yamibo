@@ -5,7 +5,7 @@ import { createElement } from 'react'
 import yargsParser from 'yargs-parser'
 import pkg from '../package.json'
 import { App } from './app'
-// import { sign } from './utils/api'
+import { sign } from './utils/api'
 
 interface Argv {
   _: string[]
@@ -50,7 +50,7 @@ async function main() {
   const command = argv._[0]
 
   if (command === 'sign') {
-    // await sign()
+    await sign()
     return
   }
 

@@ -13,6 +13,7 @@ export function ThreadListPagination() {
       current={threadListState.pagination.current}
       total={threadListState.pagination.total}
       onPageChange={current => setThreadListState({ ...threadListState, pagination: { ...threadListState.pagination, current } })}
+      disabled={threadListState.focusMode === 'subforum'}
     />
   )
 }

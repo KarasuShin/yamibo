@@ -11,9 +11,8 @@ export const loginStatusAtom = atom<'active' | 'inactive' | 'expired'>('inactive
 
 export const ConfigManagerAtom = atom(new ConfigManager())
 
-export const threadListPaginationAtom = atom<{ current: number, total: number }>({ current: 1, total: 1 })
-
 export const threadListStateAtom = atom<{
+  defaultFid: string
   fid: string
   forumName: string
   pagination: {
@@ -21,6 +20,12 @@ export const threadListStateAtom = atom<{
     total: number
   }
   tid: string
+  subForumIndex: number
+  focusMode: 'thread' | 'subforum'
+  subForm: null | {
+    title: string
+    fid: string
+  }[]
 } | null>(null)
 
 export const threadDetailStateAtom = atom<{

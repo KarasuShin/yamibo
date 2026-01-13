@@ -17,9 +17,10 @@ interface Props {
   onChange: (index: SelectItem) => void
   selectedIndex: number
   limit?: number
+  isActive?: boolean
 }
 
-export function SelectView({ items, onSelect, onChange, selectedIndex, limit }: Props) {
+export function SelectView({ items, onSelect, onChange, selectedIndex, limit, isActive = true }: Props) {
   const scrollOffset = useSetState(0)
   const [columns] = useStdoutDimensions()
   const maxWidth = columns - 2
@@ -85,6 +86,8 @@ export function SelectView({ items, onSelect, onChange, selectedIndex, limit }: 
   }, [items, scrollOffset, visibleLimit, columns, selectedIndex])
 
   useInput((_, key) => {
+    if (!isActive)
+      return
     if (key.upArrow) {
       if (selectedIndex > 0) {
         const newIndex = findPrevSelectableIndex(selectedIndex)
